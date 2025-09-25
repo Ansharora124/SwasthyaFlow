@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 // Replaced static image with live analytics component
 import AnalyticsInsights from '@/components/AnalyticsInsights';
+import InfiniteCarousel from '@/components/InfiniteCarousel';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 
@@ -167,6 +168,22 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Infinite Carousel (Insights strip) */}
+            <InfiniteCarousel
+              title="Live Practice Insights"
+              speed="normal"
+              items={[
+                { label: 'Next Session', value: sessions[0]?.time + ' • ' + sessions[0]?.patient, accent: 'primary' },
+                { label: 'Confirmed Today', value: sessions.filter(s=>s.status==='confirmed').length + ' sessions', accent: 'success' },
+                { label: 'Pending Approvals', value: sessions.filter(s=>s.status==='pending').length + ' sessions', accent: 'warning' },
+                { label: 'Active Patients', value: patients.length + ' in directory', accent: 'primary' },
+                { label: 'Therapies Offered', value: '5 core therapies', accent: 'accent' },
+                { label: 'Utilization', value: 'High (mock metric)', accent: 'success' },
+                { label: 'Feedback', value: '3 new comments', accent: 'accent' },
+              ]}
+              className="h-24"
+            />
 
             {/* Schedule */}
             <Card className="border-border bg-card dash-reveal fade-up">

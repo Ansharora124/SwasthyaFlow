@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useEffect } from 'react';
 import { useParallaxScroll } from '@/hooks/useParallaxScroll';
 import ParallaxDecor from '@/components/ParallaxDecor';
+import ThreeDScrollSlider from '@/components/ThreeDScrollSlider';
 import { 
   Calendar, 
   Bell, 
@@ -138,7 +139,10 @@ const Features = () => {
           ))}
         </div>
 
-        {/* Bottom CTA */}
+  {/* 3D Scroll Slider */}
+  <ThreeDScrollSlider />
+
+  {/* Bottom CTA */}
         <div className="text-center mt-16">
           <div className="bg-card rounded-2xl p-8 shadow-medium border border-border">
             <h3 className="text-2xl font-bold text-foreground mb-4">

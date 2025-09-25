@@ -155,3 +155,41 @@ All colors MUST be HSL.
     0% { transform:translateX(0); }
     100% { transform:translateX(105%); }
   }
+
+  /* Infinite carousel */
+  @keyframes marquee-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  @keyframes marquee-right {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+  }
+
+  .infinite-carousel {
+    position:relative; overflow:hidden; border-radius:0.75rem; border:1px solid hsl(var(--border)); background:hsla(var(--card) / 0.6); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); box-shadow:var(--shadow-soft);
+  }
+  .infinite-carousel-track {
+    display:flex; width:200%;
+  }
+  .infinite-carousel[data-direction="left"] .infinite-carousel-track { animation: marquee-left linear infinite; }
+  .infinite-carousel[data-direction="right"] .infinite-carousel-track { animation: marquee-right linear infinite; }
+  .infinite-carousel[data-speed="slow"] .infinite-carousel-track { animation-duration: 40s; }
+  .infinite-carousel[data-speed="normal"] .infinite-carousel-track { animation-duration: 28s; }
+  .infinite-carousel[data-speed="fast"] .infinite-carousel-track { animation-duration: 18s; }
+  .infinite-carousel:hover .infinite-carousel-track { animation-play-state: paused; }
+  @media (prefers-reduced-motion: reduce) {
+    .infinite-carousel-track { animation: none !important; transform: translateX(0) !important; }
+  }
+
+  /* 3D Scroll Slider */
+  .three-d-slider { perspective: 1600px; position:relative; height: 640px; max-width:1100px; margin:0 auto; }
+  .three-d-ring { position:absolute; top:50%; left:50%; width:900px; height:900px; transform-style:preserve-3d; transform:translate(-50%,-50%) translateZ(-480px) rotateY(0deg); will-change:transform; }
+  .three-d-slide { position:absolute; top:50%; left:50%; width:320px; height:200px; transform-style:preserve-3d; translate:-50% -50%; border-radius:1rem; overflow:hidden; background: hsl(var(--card)); border:1px solid hsl(var(--border)); display:flex; flex-direction:column; justify-content:flex-end; will-change:transform, filter; }
+  .three-d-img { object-fit:cover; width:100%; height:100%; filter:brightness(.92) saturate(1.05); transition: filter .4s, transform .6s; }
+  .three-d-slide:hover .three-d-img { filter:brightness(1) saturate(1.15); transform:scale(1.04); }
+  .three-d-caption { position:absolute; inset:0; background:linear-gradient(to top, hsla(var(--foreground)/0.8), hsla(var(--foreground)/0.05) 65%); color:hsl(var(--primary-foreground)); font-size:.75rem; letter-spacing:.05em; text-transform:uppercase; padding:0.75rem 0.9rem; display:flex; align-items:flex-end; font-weight:600; }
+  .three-d-slider-gradient { position:absolute; inset:0; background:radial-gradient(circle at center, hsla(var(--primary)/0.08), transparent 60%), linear-gradient(to bottom, transparent, hsla(var(--primary)/0.07)); mix-blend-mode:normal; pointer-events:none; }
+  @media (max-width: 900px) { .three-d-ring { width:720px; height:720px; } .three-d-slide { width:260px; height:170px; } }
+  @media (max-width: 640px) { .three-d-slider { height:560px; } .three-d-ring { width:620px; height:620px; } .three-d-slide { width:220px; height:150px; } }
+  @media (prefers-reduced-motion: reduce) { .three-d-ring { transition:none !important; } }
