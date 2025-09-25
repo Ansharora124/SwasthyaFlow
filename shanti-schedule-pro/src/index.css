@@ -130,3 +130,9 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+  /* Simple scroll-reveal utility classes */
+  @layer utilities {
+    .reveal { @apply opacity-0 translate-y-6 transition-all duration-700 ease-out; }
+    .reveal.visible { @apply opacity-100 translate-y-0; }
+  }

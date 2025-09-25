@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect } from 'react';
 import { 
   Calendar, 
   Bell, 
@@ -12,6 +13,18 @@ import {
 } from 'lucide-react';
 
 const Features = () => {
+  useEffect(() => {
+    const cards = document.querySelectorAll('.feature-card');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.2 });
+    cards.forEach(c => observer.observe(c));
+    return () => observer.disconnect();
+  }, []);
   const features = [
     {
       icon: Calendar,
@@ -86,7 +99,7 @@ const Features = () => {
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <Card key={index} className="border-border hover:shadow-medium transition-all duration-300 hover:-translate-y-1 bg-card">
+            <Card key={index} className="feature-card reveal border-border hover:shadow-medium transition-all duration-300 hover:-translate-y-1 bg-card">
               <CardHeader>
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${feature.color} mb-4`}>
                   <feature.icon className="h-6 w-6" />

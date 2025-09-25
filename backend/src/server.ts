@@ -36,6 +36,10 @@ app.get('/api/me', requireAuth(), (req: Request, res) => {
 import scheduleRouter from './schedules/routes';
 app.use('/api/schedules', requireAuth(), scheduleRouter);
 
+// Analytics (summary + SSE stream)
+import analyticsRouter from './analytics/routes';
+app.use('/api/analytics', analyticsRouter);
+
 // Start
 const PORT = Number(process.env.PORT || 4000);
 const MONGODB_URI = process.env.MONGODB_URI || '';

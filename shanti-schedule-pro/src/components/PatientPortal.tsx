@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +17,16 @@ import {
 import patientApp from '@/assets/patient-app.jpg';
 
 const PatientPortal = () => {
+  useEffect(() => {
+    const items = document.querySelectorAll('.patient-reveal');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.2 });
+    items.forEach(i => observer.observe(i));
+    return () => observer.disconnect();
+  }, []);
   const upcomingTherapies = [
     { 
       name: "Abhyanga (Oil Massage)", 
@@ -108,7 +119,7 @@ const PatientPortal = () => {
           {/* Patient Portal Features */}
           <div className="space-y-8">
             {/* Upcoming Sessions */}
-            <Card className="border-border bg-card">
+            <Card className="border-border bg-card patient-reveal reveal">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-foreground flex items-center">
@@ -145,7 +156,7 @@ const PatientPortal = () => {
             </Card>
 
             {/* Smart Notifications */}
-            <Card className="border-border bg-card">
+            <Card className="border-border bg-card patient-reveal reveal">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center">
                   <Bell className="h-5 w-5 mr-2 text-primary" />
@@ -174,7 +185,7 @@ const PatientPortal = () => {
             </Card>
 
             {/* Progress Tracking */}
-            <Card className="border-border bg-card">
+            <Card className="border-border bg-card patient-reveal reveal">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center">
                   <Activity className="h-5 w-5 mr-2 text-primary" />
