@@ -25,9 +25,13 @@ const Dashboard = () => {
     const elements = document.querySelectorAll('.dash-reveal');
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) entry.target.classList.add('visible');
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        } else {
+          entry.target.classList.remove('visible');
+        }
       });
-    }, { threshold: 0.15 });
+    }, { threshold: 0.25 });
     elements.forEach(el => observer.observe(el));
     return () => observer.disconnect();
   }, []);
@@ -111,7 +115,7 @@ const Dashboard = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Stats Cards */}
             <div className="grid md:grid-cols-4 gap-4">
-              <Card className="border-border bg-card dash-reveal reveal">
+               <Card className="border-border bg-card dash-reveal fade-up">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                     <Users className="h-4 w-4 mr-2" />
@@ -124,7 +128,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-border bg-card dash-reveal reveal">
+               <Card className="border-border bg-card dash-reveal fade-up">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                     <Calendar className="h-4 w-4 mr-2" />
@@ -137,7 +141,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-border bg-card dash-reveal reveal">
+               <Card className="border-border bg-card dash-reveal fade-up">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                     <Activity className="h-4 w-4 mr-2" />
@@ -150,7 +154,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-border bg-card dash-reveal reveal">
+               <Card className="border-border bg-card dash-reveal fade-up">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                     <TrendingUp className="h-4 w-4 mr-2" />
@@ -165,7 +169,7 @@ const Dashboard = () => {
             </div>
 
             {/* Schedule */}
-            <Card className="border-border bg-card dash-reveal reveal">
+            <Card className="border-border bg-card dash-reveal fade-up">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-foreground">Schedule</CardTitle>
@@ -224,7 +228,7 @@ const Dashboard = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <Card className="border-border bg-card dash-reveal reveal">
+            <Card className="border-border bg-card dash-reveal fade-up">
               <CardHeader>
                 <CardTitle className="text-foreground">Quick Actions</CardTitle>
               </CardHeader>
@@ -336,7 +340,7 @@ const Dashboard = () => {
             </Card>
 
             {/* Recent Activity */}
-            <Card className="border-border bg-card dash-reveal reveal">
+            <Card className="border-border bg-card dash-reveal fade-up">
               <CardHeader>
                 <CardTitle className="text-foreground">Recent Activity</CardTitle>
               </CardHeader>

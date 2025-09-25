@@ -135,4 +135,23 @@ All colors MUST be HSL.
   @layer utilities {
     .reveal { @apply opacity-0 translate-y-6 transition-all duration-700 ease-out; }
     .reveal.visible { @apply opacity-100 translate-y-0; }
+    .fade-up { opacity:0; transform: translateY(20px); }
+    .fade-up.visible { animation: fadeUp 0.6s cubic-bezier(.22,.68,.36,1) forwards; }
+    /* Card wipe reveal (image-style) */
+    .reveal-wipe { position:relative; overflow:hidden; opacity:0; transform: translateY(24px); }
+    .reveal-wipe::after { content:""; position:absolute; inset:0; background:linear-gradient(135deg,hsl(var(--primary)) 0%,hsl(var(--primary-light)) 60%,hsl(var(--primary)/0.4) 100%); transform:translateX(0); }
+    .reveal-wipe.visible { animation: cardFadeUp .7s cubic-bezier(.22,.68,.36,1) forwards; }
+    .reveal-wipe.visible::after { animation: wipe 0.9s cubic-bezier(.77,0,.18,1) forwards .12s; }
+  }
+
+  @keyframes fadeUp {
+    to { opacity:1; transform: translateY(0); }
+  }
+  @keyframes cardFadeUp {
+    0% { opacity:0; transform: translateY(24px); }
+    100% { opacity:1; transform: translateY(0); }
+  }
+  @keyframes wipe {
+    0% { transform:translateX(0); }
+    100% { transform:translateX(105%); }
   }

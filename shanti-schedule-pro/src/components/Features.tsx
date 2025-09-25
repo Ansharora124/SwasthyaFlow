@@ -1,5 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useEffect } from 'react';
+import { useParallaxScroll } from '@/hooks/useParallaxScroll';
+import ParallaxDecor from '@/components/ParallaxDecor';
 import { 
   Calendar, 
   Bell, 
@@ -18,13 +20,19 @@ const Features = () => {
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
+          // restart animation by removing and re-adding (in case it was visible before)
           entry.target.classList.add('visible');
+        } else {
+          entry.target.classList.remove('visible');
         }
       });
-    }, { threshold: 0.2 });
+    }, { threshold: 0.35 });
     cards.forEach(c => observer.observe(c));
     return () => observer.disconnect();
   }, []);
+
+  // Activate parallax for decorative layers
+  useParallaxScroll();
   const features = [
     {
       icon: Calendar,
@@ -83,8 +91,17 @@ const Features = () => {
   ];
 
   return (
-    <section id="features" className="py-20 bg-gradient-healing">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="features" className="relative py-20 bg-gradient-healing overflow-hidden">
+      <ParallaxDecor
+        layers={[
+          { shape: 'circle', size: 420, speed: 0.22, colorClass: 'bg-primary/15', className: '-top-44 -left-40' },
+          { shape: 'blob', size: 520, speed: 0.18, colorClass: 'bg-accent/20', className: 'top-1/3 -right-52', blur: 'blur-3xl' },
+            { shape: 'ring', size: 380, speed: 0.28, colorClass: 'bg-transparent', className: 'bottom-10 left-1/4 border-primary/30', blur: 'blur' },
+          { shape: 'diamond', size: 260, speed: 0.35, colorClass: 'bg-success/15', className: 'bottom-32 right-1/3', rotate: 45 },
+          { shape: 'circle', size: 300, speed: 0.30, colorClass: 'bg-primary/10', className: 'top-1/2 left-1/2 -translate-x-1/2', blur: 'blur-2xl' }
+        ]}
+      />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-foreground mb-4">
@@ -99,7 +116,11 @@ const Features = () => {
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <Card key={index} className="feature-card reveal border-border hover:shadow-medium transition-all duration-300 hover:-translate-y-1 bg-card">
+            <Card
+              key={index}
+              className="feature-card fade-up border-border hover:shadow-medium transition-shadow duration-300 hover:-translate-y-1 bg-card"
+              style={{ animationDelay: `${index * 70}ms` }}
+            >
               <CardHeader>
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${feature.color} mb-4`}>
                   <feature.icon className="h-6 w-6" />

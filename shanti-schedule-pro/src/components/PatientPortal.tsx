@@ -21,9 +21,13 @@ const PatientPortal = () => {
     const items = document.querySelectorAll('.patient-reveal');
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) entry.target.classList.add('visible');
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        } else {
+          entry.target.classList.remove('visible');
+        }
       });
-    }, { threshold: 0.2 });
+    }, { threshold: 0.3 });
     items.forEach(i => observer.observe(i));
     return () => observer.disconnect();
   }, []);
@@ -119,7 +123,7 @@ const PatientPortal = () => {
           {/* Patient Portal Features */}
           <div className="space-y-8">
             {/* Upcoming Sessions */}
-            <Card className="border-border bg-card patient-reveal reveal">
+            <Card className="border-border bg-card patient-reveal fade-up">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-foreground flex items-center">
@@ -156,7 +160,7 @@ const PatientPortal = () => {
             </Card>
 
             {/* Smart Notifications */}
-            <Card className="border-border bg-card patient-reveal reveal">
+            <Card className="border-border bg-card patient-reveal fade-up">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center">
                   <Bell className="h-5 w-5 mr-2 text-primary" />
@@ -185,7 +189,7 @@ const PatientPortal = () => {
             </Card>
 
             {/* Progress Tracking */}
-            <Card className="border-border bg-card patient-reveal reveal">
+            <Card className="border-border bg-card patient-reveal fade-up">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center">
                   <Activity className="h-5 w-5 mr-2 text-primary" />

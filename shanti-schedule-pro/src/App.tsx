@@ -9,33 +9,35 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const AppShell = () => (
+  <Routes>
+    <Route path="/" element={<Index />} />
+    <Route path="/sign-in" element={<SignIn routing="path" path="/sign-in" />} />
+    <Route path="/sign-up" element={<SignUp routing="path" path="/sign-up" />} />
+    <Route
+      path="/dashboard"
+      element={
+        <>
+          <SignedIn>
+            <Index />
+          </SignedIn>
+          <SignedOut>
+            <RedirectToSignIn />
+          </SignedOut>
+        </>
+      }
+    />
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/sign-in" element={<SignIn routing="path" path="/sign-in" />} />
-          <Route path="/sign-up" element={<SignUp routing="path" path="/sign-up" />} />
-          {/* Example protected route wrapper */}
-          <Route
-            path="/dashboard"
-            element={
-              <>
-                <SignedIn>
-                  <Index />
-                </SignedIn>
-                <SignedOut>
-                  <RedirectToSignIn />
-                </SignedOut>
-              </>
-            }
-          />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AppShell />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

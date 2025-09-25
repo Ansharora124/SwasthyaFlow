@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Calendar, Users, Activity } from 'lucide-react';
+import { Menu, X, Activity } from 'lucide-react';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 import { useActiveSection } from '@/hooks/useActiveSection';
 
@@ -39,6 +39,8 @@ const Header = () => {
             </div>
           </div>
 
+          {/* (Role buttons removed in revert) */}
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {[
@@ -62,9 +64,7 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             <SignedOut>
               <SignInButton forceRedirectUrl="/dashboard">
-                <Button variant="outline">
-                  Sign In
-                </Button>
+                <Button variant="outline">Sign In</Button>
               </SignInButton>
             </SignedOut>
             <SignedIn>
@@ -91,6 +91,7 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden border-t border-border bg-card animate-in fade-in slide-in-from-top-2">
             <div className="px-2 pt-2 pb-3 space-y-1">
+              {/* (Role buttons removed in revert) */}
               {sectionIds.map(id => (
                 <button
                   key={id}
@@ -103,9 +104,7 @@ const Header = () => {
               <div className="flex flex-col space-y-2 px-3 pt-2">
                 <SignedOut>
                   <SignInButton forceRedirectUrl="/dashboard">
-                    <Button variant="outline" size="sm">
-                      Sign In
-                    </Button>
+                    <Button variant="outline" size="sm">Sign In</Button>
                   </SignInButton>
                 </SignedOut>
                 <SignedIn>

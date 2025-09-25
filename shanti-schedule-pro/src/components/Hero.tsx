@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
+import ParallaxDecor from '@/components/ParallaxDecor';
 
 const Hero = () => {
   const stats = [
@@ -49,8 +50,16 @@ const Hero = () => {
   }, [stats]);
 
   return (
-    <section id="hero" className="relative min-h-screen bg-gradient-healing flex items-center">
+    <section id="hero" className="relative min-h-screen bg-gradient-healing flex items-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-background/50" />
+      <ParallaxDecor
+        layers={[
+          { shape: 'circle', size: 480, speed: 0.18, colorClass: 'bg-primary/15', className: '-top-40 -left-40' },
+          { shape: 'blob', size: 560, speed: 0.26, colorClass: 'bg-accent/25', className: 'top-1/3 -right-56', blur: 'blur-3xl' },
+          { shape: 'ring', size: 420, speed: 0.22, colorClass: 'bg-transparent', className: 'bottom-10 left-1/2 -translate-x-1/2 border-primary/30', blur: 'blur' },
+          { shape: 'diamond', size: 300, speed: 0.34, colorClass: 'bg-success/15', className: 'bottom-28 right-1/3', rotate: 45 }
+        ]}
+      />
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
