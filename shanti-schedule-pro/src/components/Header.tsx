@@ -56,7 +56,6 @@ const Header = () => {
             </div>
           </div>
 
-          {/* (Role buttons removed in revert) */}
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
@@ -85,8 +84,10 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* CTA + Quick Access Buttons */}
+          <div className="hidden md:flex items-center space-x-3">
+            <Button variant="outline" onClick={() => navigate('/doctor')}>Doctor</Button>
+            <Button className="bg-gradient-primary" onClick={() => navigate('/patient')}>Patient</Button>
             <SignedOut>
               <SignInButton forceRedirectUrl="/dashboard">
                 <Button variant="outline">Sign In</Button>
@@ -95,9 +96,7 @@ const Header = () => {
             <SignedIn>
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
-            <Button className="bg-gradient-primary">
-              Get Started
-            </Button>
+            {/* Get Started removed in favor of explicit Patient button */}
           </div>
 
           {/* Mobile menu button */}
@@ -116,7 +115,10 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden border-t border-border bg-card animate-in fade-in slide-in-from-top-2">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {/* (Role buttons removed in revert) */}
+              <div className="grid grid-cols-2 gap-2 px-3">
+                <Button variant="outline" size="sm" onClick={() => { setIsMenuOpen(false); navigate('/doctor'); }}>Doctor</Button>
+                <Button className="bg-gradient-primary" size="sm" onClick={() => { setIsMenuOpen(false); navigate('/patient'); }}>Patient</Button>
+              </div>
               {sectionIds.map(id => (
                 <button
                   key={id}

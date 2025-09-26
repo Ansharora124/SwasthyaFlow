@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,8 +24,37 @@ const PatientSchedule = () => {
   const [date, setDate] = useState(todayISO);
   const [time, setTime] = useState('');
   const [submittedId, setSubmittedId] = useState<string|null>(null);
+  const bcRef = useRef<BroadcastChannel | null>(null);
 
   const canSubmit = name.trim().length > 2 && time && date;
+
+  // Setup BroadcastChannel for realtime updates (fallback to storage events)
+  useEffect(() => {
+    if ('BroadcastChannel' in window) {
+      bcRef.current = new BroadcastChannel('doctor-live');
+    }
+    return () => {
+      bcRef.current?.close();
+      bcRef.current = null;
+      // Clear live name when leaving or if field is empty
+      try { localStorage.removeItem('doctor.livePatientName'); } catch {}
+    };
+  }, []);
+
+  // Broadcast the patient's typed name in real time
+  useEffect(() => {
+    const payload = { name: name.trim(), at: Date.now() };
+    try {
+      if (payload.name) {
+        localStorage.setItem('doctor.livePatientName', JSON.stringify(payload));
+      } else {
+        localStorage.removeItem('doctor.livePatientName');
+      }
+    } catch {}
+    try {
+      bcRef.current?.postMessage(payload);
+    } catch {}
+  }, [name]);
 
   const submit = () => {
     if (!canSubmit) return;
@@ -40,6 +69,11 @@ const PatientSchedule = () => {
     setAppointments(prev => [...prev, appt]);
     setSubmittedId(appt.id);
     setTime('');
+    // Optionally clear the live name after submission
+    try {
+      localStorage.removeItem('doctor.livePatientName');
+      bcRef.current?.postMessage({ name: '', at: Date.now() });
+    } catch {}
   };
 
   const recent = [...appointments].slice(-5).reverse();

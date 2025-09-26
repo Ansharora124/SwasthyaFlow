@@ -2,14 +2,9 @@ import Header from '@/components/Header';
 import DoctorDashboard from '@/components/DoctorDashboard';
 import Footer from '@/components/Footer';
 import { SignedIn, SignedOut, SignIn } from '@clerk/clerk-react';
-import { useUserRole } from '@/hooks/useUserRole';
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// role gating removed so this page can be accessed directly via /doctor
 
 const DoctorPage = () => {
-  const [role] = useUserRole();
-  const navigate = useNavigate();
-  useEffect(() => { if (role !== 'doctor') navigate('/role'); }, [role, navigate]);
   return (
     <div className="min-h-screen bg-background">
       <Header />

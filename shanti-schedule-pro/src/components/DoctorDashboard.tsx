@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,16 @@ interface Session {
   date: string; // yyyy-mm-dd
   status: SessionStatus;
   notes?: string;
+}
+
+// Mirror of patient appointment requests saved by PatientSchedule
+interface PatientAppointment {
+  id: string;
+  name: string;
+  therapy: string;
+  date: string;
+  time: string;
+  createdAt: string;
 }
 
 const therapyOptions = ['Abhyanga','Shirodhara','Swedana','Nasya','Basti'];
@@ -54,6 +64,45 @@ const DoctorDashboard = () => {
     'doctor.patients',
     ['Priya Sharma','Raj Patel','Maya Singh','Arjun Kumar','Aarav Sharma','Anika Rao','Neha Verma','Rohan Das']
   );
+  // Read patient appointment requests from localStorage
+  const [incomingRequests, setIncomingRequests] = usePersistentState<PatientAppointment[]>(
+    'patient.appointments',
+    []
+  );
+  // Live patient name typing from patient page
+  const [liveName, setLiveName] = useState<string>('');
+  const bcRef = useRef<BroadcastChannel | null>(null);
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'doctor.livePatientName') {
+        try { const v = e.newValue ? JSON.parse(e.newValue) : null; setLiveName(v?.name || ''); } catch {}
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    // Initialize from current localStorage
+    try {
+      const val = localStorage.getItem('doctor.livePatientName');
+      if (val) { const v = JSON.parse(val); setLiveName(v?.name || ''); }
+    } catch {}
+    // Setup BroadcastChannel
+    if ('BroadcastChannel' in window) {
+      bcRef.current = new BroadcastChannel('doctor-live');
+      bcRef.current.onmessage = (ev) => {
+        const data = ev.data as { name?: string } | undefined;
+        if (data && typeof data.name === 'string') setLiveName(data.name);
+      };
+    }
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      bcRef.current?.close();
+      bcRef.current = null;
+    };
+  }, []);
+  // Selected patients (for focused workflow)
+  const [selectedPatients, setSelectedPatients] = usePersistentState<string[]>(
+    'doctor.selectedPatients',
+    []
+  );
 
   // Filters & search
   const [dateFilter, setDateFilter] = useState<string>(todayISO);
@@ -65,8 +114,9 @@ const DoctorDashboard = () => {
       .filter(s => !dateFilter || s.date === dateFilter)
       .filter(s => statusFilter === 'all' || s.status === statusFilter)
       .filter(s => !search || s.patient.toLowerCase().includes(search.toLowerCase()))
+      .filter(s => selectedPatients.length === 0 || selectedPatients.includes(s.patient))
       .sort((a,b) => (a.time.localeCompare(b.time)));
-  }, [sessions, dateFilter, statusFilter, search]);
+  }, [sessions, dateFilter, statusFilter, search, selectedPatients]);
 
   // New session creation
   const [newPatient, setNewPatient] = useState('');
@@ -74,6 +124,8 @@ const DoctorDashboard = () => {
   const [newTime, setNewTime] = useState('');
   const [newDate, setNewDate] = useState(todayISO);
   const canAddSession = newPatient.trim().length > 2 && newTime && newDate;
+  // Patient picker inside the New Session sheet
+  const [patientPickerQuery, setPatientPickerQuery] = useState('');
 
   const addSession = () => {
     if (!canAddSession) return;
@@ -109,6 +161,17 @@ const DoctorDashboard = () => {
           <div>
             <h2 className="text-3xl font-bold text-foreground mb-2">Doctor Dashboard</h2>
             <p className="text-muted-foreground text-sm max-w-xl">Manage your daily schedule, monitor patient progress and streamline therapy planning.</p>
+            {liveName && (
+              <div className="mt-2 inline-flex items-center gap-2 text-xs bg-muted/50 px-2 py-1 rounded">
+                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                <span className="text-foreground">Patient typing: <strong>{liveName}</strong></span>
+                <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px]" onClick={() => {
+                  const n = liveName.trim();
+                  if (!n) return;
+                  if (!patients.includes(n)) setPatients(p => [...p, n].sort((a,b)=>a.localeCompare(b)));
+                }}>Add to Directory</Button>
+              </div>
+            )}
           </div>
           <div className="flex gap-3 flex-wrap">
             <div className="flex items-center gap-2">
@@ -122,6 +185,12 @@ const DoctorDashboard = () => {
               <Search className="h-4 w-4 absolute left-2 top-2.5 text-muted-foreground"/>
               <Input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search patient" className="pl-8 h-9 w-48" />
             </div>
+            {selectedPatients.length > 0 && (
+              <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/40 text-xs">
+                <span className="text-foreground">Selected: {selectedPatients.length}</span>
+                <Button size="sm" variant="ghost" className="h-7 px-2 text-[11px]" onClick={()=>setSelectedPatients([])}>Clear</Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -168,6 +237,83 @@ const DoctorDashboard = () => {
                         <div className="space-y-1">
                           <label className="text-xs font-medium text-muted-foreground">Patient Name</label>
                           <Input value={newPatient} onChange={e=>setNewPatient(e.target.value)} placeholder="e.g. Riya Malhotra" />
+                        </div>
+                        {/* Quick select from directory */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-muted-foreground">Pick from Directory</span>
+                            <Input
+                              value={patientPickerQuery}
+                              onChange={e=>setPatientPickerQuery(e.target.value)}
+                              placeholder="Search"
+                              className="h-8 w-40 text-xs"
+                            />
+                          </div>
+                          {selectedPatients.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {selectedPatients.slice(0,8).map(p => (
+                                <button
+                                  key={p}
+                                  onClick={() => setNewPatient(p)}
+                                  className="px-2 py-1 rounded-md bg-muted/50 text-xs hover:bg-muted/70"
+                                  title="Use this patient"
+                                >
+                                  {p}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          <div className="max-h-40 overflow-y-auto rounded-md border border-border/60 divide-y">
+                            {patients
+                              .filter(p => !patientPickerQuery || p.toLowerCase().includes(patientPickerQuery.toLowerCase()))
+                              .sort((a,b)=>a.localeCompare(b))
+                              .slice(0,40)
+                              .map(p => (
+                                <div key={p} className="flex items-center justify-between px-2 py-1 bg-card/50 hover:bg-muted/40">
+                                  <span className="truncate text-sm text-foreground pr-2">{p}</span>
+                                  <div className="flex items-center gap-2">
+                                    <Button variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={() => setNewPatient(p)}>Use</Button>
+                                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => { if (!selectedPatients.includes(p)) setSelectedPatients(prev=>[...prev, p]); }}>Select</Button>
+                                  </div>
+                                </div>
+                              ))}
+                            {patients.filter(p => !patientPickerQuery || p.toLowerCase().includes(patientPickerQuery.toLowerCase())).length === 0 && (
+                              <div className="px-2 py-3 text-xs text-muted-foreground">No matches in directory.</div>
+                            )}
+                          </div>
+                        </div>
+                        {/* Incoming Appointment Requests */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-muted-foreground">Incoming Requests</span>
+                            <span className="text-[11px] text-muted-foreground">Last {Math.min(10, incomingRequests.length)} shown</span>
+                          </div>
+                          <div className="max-h-44 overflow-y-auto rounded-md border border-border/60 divide-y">
+                            {incomingRequests.length === 0 && (
+                              <div className="px-2 py-3 text-xs text-muted-foreground">No requests yet.</div>
+                            )}
+                            {[...incomingRequests]
+                              .sort((a,b)=> (b.createdAt || '').localeCompare(a.createdAt || ''))
+                              .slice(0,10)
+                              .map(req => (
+                                <div key={req.id} className="flex items-center justify-between px-2 py-2 bg-card/50 hover:bg-muted/40">
+                                  <div className="min-w-0 pr-2">
+                                    <p className="text-sm font-medium text-foreground truncate">{req.name}</p>
+                                    <p className="text-[11px] text-muted-foreground truncate">{req.therapy} • {req.date} {req.time}</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Button variant="outline" size="sm" className="h-7 px-2 text-xs"
+                                      onClick={() => {
+                                        setNewPatient(req.name);
+                                        setNewTherapy(req.therapy);
+                                        setNewDate(req.date);
+                                        setNewTime(req.time);
+                                      }}
+                                    >Use</Button>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
                         </div>
                         <div className="flex gap-2">
                           <select value={newTherapy} onChange={e=>setNewTherapy(e.target.value)} className="flex-1 border rounded-md bg-background px-2 py-2 text-sm">
@@ -274,14 +420,38 @@ const DoctorDashboard = () => {
               </CardContent>
             </Card>
             <Card className="border-border bg-card doc-reveal fade-up">
-              <CardHeader><CardTitle className="text-foreground">Directory</CardTitle><CardDescription>{patients.length} patients</CardDescription></CardHeader>
-              <CardContent className="max-h-[340px] overflow-y-auto space-y-1 text-sm">
-                {patients.sort((a,b)=>a.localeCompare(b)).map(p => (
-                  <div key={p} className="flex items-center justify-between px-2 py-1 rounded hover:bg-muted/40">
-                    <span className="truncate text-foreground">{p}</span>
-                    <Button size="xs" variant="ghost" className="text-[10px] h-6 px-2" onClick={() => { setNewPatient(p); setNewDate(todayISO); }}>Schedule</Button>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-foreground">Directory</CardTitle>
+                    <CardDescription>{patients.length} patients</CardDescription>
                   </div>
-                ))}
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" className="h-8" onClick={()=>setSelectedPatients(patients.slice())}>Select All</Button>
+                    <Button size="sm" variant="ghost" className="h-8" onClick={()=>setSelectedPatients([])}>Clear</Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="max-h-[340px] overflow-y-auto space-y-1 text-sm">
+                {patients.sort((a,b)=>a.localeCompare(b)).map(p => {
+                  const checked = selectedPatients.includes(p);
+                  return (
+                    <label key={p} className="flex items-center justify-between px-2 py-1 rounded hover:bg-muted/40 gap-2 cursor-pointer">
+                      <div className="flex items-center gap-2 flex-1">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 accent-current"
+                          checked={checked}
+                          onChange={(e)=>{
+                            setSelectedPatients(prev => e.target.checked ? [...new Set([...prev, p])] : prev.filter(x=>x!==p));
+                          }}
+                        />
+                        <span className="truncate text-foreground">{p}</span>
+                      </div>
+                      <Button size="sm" variant="ghost" className="text-[10px] h-6 px-2" onClick={(ev) => { ev.preventDefault(); setNewPatient(p); setNewDate(todayISO); }}>Schedule</Button>
+                    </label>
+                  );
+                })}
               </CardContent>
             </Card>
           </div>

@@ -22,7 +22,7 @@ const ThreeDScrollSlider = () => {
     const ring = ringRef.current;
     if (!container || !ring) return;
 
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const total = slides.length;
     const angleStep = 360 / total;
 
@@ -37,17 +37,19 @@ const ThreeDScrollSlider = () => {
     let current = 0; // smoothed rotation
     let target = 0;  // target rotation
 
+    const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+    const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
     const calcTarget = () => {
       const rect = container.getBoundingClientRect();
       const vh = window.innerHeight || 1;
-      // Map center crossing to progress (0 when top well below, 1 when bottom leaves)
-      const visiblePortion = Math.min(vh, Math.max(0, vh - rect.top));
-      // Use distance of container center from viewport center for stable mapping
-      const centerDelta = (rect.top + rect.height / 2) - (vh / 2);
-      const norm = 1 - Math.min(1, Math.max(-1, centerDelta / (vh))); // -1..1 -> 0..2 -> clamp -> invert-ish
-      const progress = Math.min(1, Math.max(0, norm));
-      // 1.5 full turns across scroll passage
-      target = progress * 540; // degrees
+      // Progress from when the top hits the bottom of viewport to when the bottom leaves the top
+      const totalSpan = vh + rect.height; // span of travel while visible
+      const passed = vh - rect.top; // pixels progressed into the span
+      const raw = passed / totalSpan; // can be <0 or >1, clamp to 0..1
+      const progress = clamp01(raw);
+      const eased = easeInOutCubic(progress);
+      // Rotate 1.5 turns across the scroll passage with easing
+      target = eased * 540; // degrees
     };
 
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -55,7 +57,7 @@ const ThreeDScrollSlider = () => {
     const animate = () => {
       if (!running) return;
       calcTarget();
-      current = lerp(current, target, 0.08); // smoothing factor
+      current = lerp(current, target, 0.06); // smoother interpolation
       ring.style.transform = `translateZ(-480px) rotateY(${current}deg)`;
       requestAnimationFrame(animate);
     };
@@ -73,10 +75,6 @@ const ThreeDScrollSlider = () => {
             <figcaption className="three-d-caption">{s.caption}</figcaption>
           </figure>
         ))}
-      </div>
-      <div className="text-center mt-10 space-y-2">
-        <h3 className="text-2xl font-bold text-foreground">Immersive Platform Preview</h3>
-        <p className="text-muted-foreground text-sm max-w-xl mx-auto">Scroll to rotate the 3D carousel and explore core product surfaces: analytics, therapy environment, patient engagement, scheduling and recovery tracking.</p>
       </div>
     </div>
   );
