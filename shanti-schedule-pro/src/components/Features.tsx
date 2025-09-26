@@ -2,7 +2,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useEffect } from 'react';
 import { useParallaxScroll } from '@/hooks/useParallaxScroll';
 import ParallaxDecor from '@/components/ParallaxDecor';
-import ThreeDScrollSlider from '@/components/ThreeDScrollSlider';
 import { 
   Calendar, 
   Bell, 
@@ -114,6 +113,8 @@ const Features = () => {
           </p>
         </div>
 
+        {/* 3D Scroll Slider removed */}
+
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
@@ -138,9 +139,6 @@ const Features = () => {
             </Card>
           ))}
         </div>
-
-  {/* 3D Scroll Slider */}
-  <ThreeDScrollSlider />
 
   {/* Bottom CTA */}
         <div className="text-center mt-16">

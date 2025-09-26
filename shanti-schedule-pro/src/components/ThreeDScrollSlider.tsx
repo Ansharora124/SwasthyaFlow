@@ -13,7 +13,7 @@ const slides: SlideDef[] = [
 ];
 
 // 3D scroll-driven carousel: rotates a ring of images based on scroll progress of its viewport segment.
-const ThreeDScrollSlider = () => {
+ const ThreeDScrollSlider = () => { 
   const containerRef = useRef<HTMLDivElement|null>(null);
   const ringRef = useRef<HTMLDivElement|null>(null);
 
@@ -26,10 +26,15 @@ const ThreeDScrollSlider = () => {
     const total = slides.length;
     const angleStep = 360 / total;
 
-    // Pre-position slides around cylinder
-    Array.from(ring.children).forEach((child, i) => {
-      (child as HTMLElement).style.transform = `rotateY(${i * angleStep}deg) translateZ(520px)`;
-    });
+    let radius = Math.max(300, Math.floor(ring.clientWidth / 2));
+
+    const positionSlides = () => {
+      radius = Math.max(240, Math.floor(ring.clientWidth / 2));
+      Array.from(ring.children).forEach((child, i) => {
+        (child as HTMLElement).style.transform = `rotateY(${i * angleStep}deg) translateZ(${radius}px)`;
+      });
+    };
+    positionSlides();
 
     if (prefersReduced) return; // Skip animated rotation
 
@@ -58,15 +63,20 @@ const ThreeDScrollSlider = () => {
       if (!running) return;
       calcTarget();
       current = lerp(current, target, 0.06); // smoother interpolation
-      ring.style.transform = `translateZ(-480px) rotateY(${current}deg)`;
+      ring.style.transform = `translateZ(-${radius}px) rotateY(${current}deg)`;
       requestAnimationFrame(animate);
     };
     requestAnimationFrame(animate);
-    return () => { running = false; };
+
+    const onResize = () => {
+      positionSlides();
+    };
+    window.addEventListener('resize', onResize);
+    return () => { running = false; window.removeEventListener('resize', onResize); };
   }, []);
 
   return (
-    <div ref={containerRef} className="three-d-slider relative mt-24 mb-12">
+    <div ref={containerRef} className="three-d-slider relative mt-4">
       <div className="three-d-slider-gradient pointer-events-none" />
       <div className="three-d-ring" ref={ringRef} aria-label="3D product media showcase">
         {slides.map((s, i) => (
