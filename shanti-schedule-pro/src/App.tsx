@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SignedIn, SignedOut, SignIn, SignUp, RedirectToSignIn } from "@clerk/clerk-react";
 import Index from "./pages/Index";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -12,6 +13,7 @@ const queryClient = new QueryClient();
 const AppShell = () => (
   <Routes>
     <Route path="/" element={<Index />} />
+    <Route path="/contact" element={<Contact />} />
     <Route path="/sign-in" element={<SignIn routing="path" path="/sign-in" />} />
     <Route path="/sign-up" element={<SignUp routing="path" path="/sign-up" />} />
     <Route

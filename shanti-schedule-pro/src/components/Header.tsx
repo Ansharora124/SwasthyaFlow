@@ -3,20 +3,37 @@ import { Button } from '@/components/ui/button';
 import { Menu, X, Activity } from 'lucide-react';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 import { useActiveSection } from '@/hooks/useActiveSection';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const sectionIds = ['features', 'dashboard', 'patients', 'contact'];
   const active = useActiveSection(sectionIds, 80);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const handleNavClick = useCallback((id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      window.history.replaceState(null, '', `#${id}`); // update hash without jump
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (id === 'contact') {
+      navigate('/contact');
       setIsMenuOpen(false);
+      return;
     }
-  }, []);
+    const doScroll = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        window.history.replaceState(null, '', `#${id}`);
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setIsMenuOpen(false);
+      }
+    };
+    if (location.pathname !== '/') {
+      navigate('/');
+      // wait next tick for DOM to mount
+      setTimeout(doScroll, 0);
+    } else {
+      doScroll();
+    }
+  }, [location.pathname, navigate]);
 
   // Lock body scroll when mobile menu open
   useEffect(() => {
@@ -43,7 +60,7 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {[
+            {[ 
               { id: 'features', label: 'Features' },
               { id: 'dashboard', label: 'Dashboard' },
               { id: 'patients', label: 'Patient Portal' },
@@ -52,10 +69,18 @@ const Header = () => {
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`relative text-sm font-medium transition-colors focus:outline-none ${active === item.id ? 'text-primary' : 'text-foreground hover:text-primary'}`}
+                className={`relative text-sm font-medium transition-colors focus:outline-none ${
+                  (item.id === 'contact' && location.pathname === '/contact') || (item.id !== 'contact' && active === item.id)
+                    ? 'text-primary'
+                    : 'text-foreground hover:text-primary'
+                }`}
               >
                 {item.label}
-                <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${active === item.id ? 'w-full' : 'w-0 group-hover:w-full'}`} />
+                <span className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all ${
+                  (item.id === 'contact' && location.pathname === '/contact') || (item.id !== 'contact' && active === item.id)
+                    ? 'w-full'
+                    : 'w-0 group-hover:w-full'
+                }`} />
               </button>
             ))}
           </nav>
@@ -96,7 +121,11 @@ const Header = () => {
                 <button
                   key={id}
                   onClick={() => handleNavClick(id)}
-                  className={`w-full text-left block px-3 py-2 rounded-md transition-colors ${active === id ? 'text-primary bg-muted/50' : 'text-foreground hover:text-primary hover:bg-muted/30'}`}
+                  className={`w-full text-left block px-3 py-2 rounded-md transition-colors ${
+                    (id === 'contact' && location.pathname === '/contact') || (id !== 'contact' && active === id)
+                      ? 'text-primary bg-muted/50'
+                      : 'text-foreground hover:text-primary hover:bg-muted/30'
+                  }`}
                 >
                   {id === 'patients' ? 'Patient Portal' : id.charAt(0).toUpperCase() + id.slice(1)}
                 </button>
